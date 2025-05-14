@@ -10,13 +10,14 @@ CREATE TABLE IF NOT EXISTS tasks (
     title VARCHAR(255) NOT NULL,
     date DATE NOT NULL,
     assignee VARCHAR(255),
-    completed BOOLEAN NOT NULL DEFAULT FALSE
+    completed CHAR(1) NOT NULL
 );
 
 -- Criação da tabela de tags
 CREATE TABLE IF NOT EXISTS tags (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
+    name VARCHAR(100) NOT NULL,
+    color VARCHAR(100) NOT NULL
 );
 
 -- Criação da tabela de ligação entre tarefas e tags

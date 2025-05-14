@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
 import { Clock, Calendar, LayoutGrid, GanttChart, User, Plus, Check } from 'lucide-react';
 
 export default function KanbanBoard() {
@@ -16,7 +17,7 @@ export default function KanbanBoard() {
           date: '01/05/2025',
           assignee: 'Hugo',
           tags: [{ text: 'Sem Prioridade', color: 'gray' }],
-          completed: true
+          completed: "p"
         }
       ]
     },
@@ -33,7 +34,7 @@ export default function KanbanBoard() {
             { text: 'Prioridade Média', color: 'yellow' },
             { text: 'Negócio', color: 'darkgray' }
           ],
-          completed: true
+          completed: "a"
         }
       ]
     },
@@ -51,11 +52,25 @@ export default function KanbanBoard() {
             { text: 'Fluxo', color: 'pink' },
             { text: 'Cronograma', color: 'pink' }
           ],
-          completed: true
+          completed: "c"
         }
       ]
     }
   ]);
+
+  const api = axios.create({
+    baseURL: 'http://localhost:8080/',
+    timeout: 5000,
+    headers: {'Content-Type': 'application/json' }
+  });
+
+  try {
+    api.get('/')
+    .then(response => console.log(response.data))
+    .catch(error => console.error(error));
+  } catch (error) {
+    console.error('Erro ao buscar as tasks', error);
+  };
 
   // Função para renderizar o chip de tag com a cor apropriada
   const renderTag = (tag) => {
@@ -92,7 +107,7 @@ export default function KanbanBoard() {
           <h1 className="text-xl font-semibold text-fuchsia-200">Nexus Task</h1>
         </div>
         <div className="flex ml-6 space-x-2">
-          <Link href="/pages/calendar" className='flex items-center cursor-pointer'>
+          <Link href="/pages/calendar" className='flex items-center cursor-'>
             <button className="flex items-center px-4 py-2 bg-gray-800 rounded-md">
               <Calendar size={16} className="mr-2" />
               <span>Calendario</span>
@@ -124,7 +139,7 @@ export default function KanbanBoard() {
                   </div>
                   
                   <div className="flex items-start">
-                    {card.completed && (
+                    {card.completed == "c" && (
                       <div className="mr-2 mt-1">
                         <div className="p-1 bg-green-600 rounded-full">
                           <Check size={14} className="text-white" />

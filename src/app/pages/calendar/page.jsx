@@ -109,18 +109,6 @@ export default function CalendarPage() {
       
       {/* Corpo principal */}
       <main className="flex flex-1 p-4">
-        {/* Barra lateral */}
-        <div className="w-12 flex flex-col items-center border-r border-gray-700 pr-2">
-          <button className="w-8 h-8 mb-4 bg-gray-700 rounded-full flex items-center justify-center">
-            <Edit size={16} />
-          </button>
-          <div className="mt-auto">
-            <button className="w-8 h-8 mb-4 bg-gray-700 rounded-full flex items-center justify-center">
-              <Home size={16} />
-            </button>
-          </div>
-        </div>
-        
         {/* Conteúdo do calendário */}
         <div className="flex-1 pl-4">
           {/* Cabeçalho do calendário */}
@@ -161,7 +149,7 @@ export default function CalendarPage() {
             
             {/* Dias do mês */}
             {weeks.flat().map((day, index) => (
-              <Link key={index} day={day} href={`/pages/frame/`} className="text-center py-2">
+              <Link year={currentYear} month={currentMonth} day={day} href={day ? `/pages/frame/` : ""} className="text-center py-2">
                 <div 
                     key={index} 
                     className={`
