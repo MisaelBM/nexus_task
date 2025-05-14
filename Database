@@ -1,0 +1,33 @@
+-- Criação do banco de dados
+CREATE DATABASE IF NOT EXISTS gerenciador_tarefas;
+
+-- Seleciona o banco de dados para uso
+USE gerenciador_tarefas;
+
+-- Criação da tabela de tarefas
+CREATE TABLE IF NOT EXISTS tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    assignee VARCHAR(255),
+    completed BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- Criação da tabela de tags
+CREATE TABLE IF NOT EXISTS tags (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Criação da tabela de ligação entre tarefas e tags
+CREATE TABLE IF NOT EXISTS task_tags (
+    task_id INT,
+    tag_id INT,
+    PRIMARY KEY (task_id, tag_id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
