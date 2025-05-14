@@ -28,7 +28,7 @@ export default function WelcomePage() {
           <p className="text-xl text-gray-300 mb-8">
             Organize seu fluxo de trabalho, acompanhe o progresso da equipe e aumente a produtividade com nossa solução completa.
           </p>
-            <Link href="/pages/frame" className="flex items-center">
+            <Link href="/pages/calendar" className="flex items-center">
                 <button className="px-8 py-3 bg-blue-600 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-blue-800 disabled:cursor-not-allowed">
                     Começar Agora <ArrowRight className="ml-2" size={20} />
                 </button>
