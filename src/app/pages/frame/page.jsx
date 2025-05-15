@@ -94,6 +94,10 @@ export default function KanbanBoard() {
   const connGetTasks = async () => {
     api.get('/')
     .then(response => {
+      columns.forEach(column => {
+        column.cards = [];
+      });
+      // Preenche os cards com os dados do banco
       const array = response.data;
       array.forEach(e => {
         columns[e.completed == "c" ? 2 : e.completed == "a" ? 1 : 0].cards.push({
@@ -155,10 +159,12 @@ export default function KanbanBoard() {
           </div>
         ))}
         
-        <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
-          <Plus size={16} className="mr-2" />
-          <span>Adicionar Cartão</span>
-        </button>
+        <Link href={`/pages/newTask/`} completed={column.id} className='flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700'>
+          <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
+            <Plus size={16} className="mr-2" />
+            <span>Adicionar Cartão</span>
+          </button>
+        </Link>
       </div>
     </div>
   )))}

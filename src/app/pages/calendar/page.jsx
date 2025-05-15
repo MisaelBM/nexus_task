@@ -154,7 +154,7 @@ export default function CalendarPage() {
                     key={index} 
                     className={`
                     h-24 p-1 relative
-                    ${day ? 'border border-gray-700 bg-gray-800' : ''} 
+                    ${day ? 'border border-gray-700 bg-gray-800 duration-400 hover:bg-gray-600' : ''} 
                     `}
                 >
                     {day && (

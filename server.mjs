@@ -19,7 +19,7 @@ app.use(express.json());
 const dbConfig = {
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: '030119983',
     database: 'gerenciador_tarefas'
 };
 
