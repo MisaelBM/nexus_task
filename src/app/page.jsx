@@ -37,7 +37,7 @@ export default function WelcomePage() {
         
         {/* Features */}
         <div className="grid md:grid-cols-3 gap-8 mt-20">
-          <div className="bg-gray-800 p-6 rounded-lg">
+          <div className="bg-gray-800 p-6 rounded-lg duration-650 scale-100 hover:scale-105">
             <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mb-4">
               <Calendar size={24} />
             </div>
@@ -47,7 +47,7 @@ export default function WelcomePage() {
             </p>
           </div>
           
-          <div className="bg-gray-800 p-6 rounded-lg">
+          <div className="bg-gray-800 p-6 rounded-lg duration-650 scale-100 hover:scale-105">
             <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mb-4">
               <User size={24} />
             </div>
@@ -57,7 +57,7 @@ export default function WelcomePage() {
             </p>
           </div>
           
-          <div className="bg-gray-800 p-6 rounded-lg">
+          <div className="bg-gray-800 p-6 rounded-lg duration-650 scale-100 hover:scale-105">
             <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mb-4">
               <CheckCircle size={24} />
             </div>
@@ -71,15 +71,15 @@ export default function WelcomePage() {
         {/* Testimonial/Stats */}
         <div className="mt-20 bg-gray-800 p-8 rounded-lg max-w-4xl">
           <div className="flex justify-between flex-wrap gap-8">
-            <div className="text-center px-4">
+            <div className="text-center px-4 duration-650 scale-100 hover:scale-105">
               <div className="text-4xl font-bold text-blue-500 mb-2">94%</div>
               <p className="text-gray-300">Aumento em produtividade</p>
             </div>
-            <div className="text-center px-4">
+            <div className="text-center px-4 duration-650 scale-100 hover:scale-105">
               <div className="text-4xl font-bold text-green-500 mb-2">78%</div>
               <p className="text-gray-300">Redução de prazos perdidos</p>
             </div>
-            <div className="text-center px-4">
+            <div className="text-center px-4 duration-650 scale-100 hover:scale-105">
               <div className="text-4xl font-bold text-purple-500 mb-2">25+</div>
               <p className="text-gray-300">Integrações disponíveis</p>
             </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
-import { Clock, Calendar, LayoutGrid, GanttChart, User, Plus, Check } from 'lucide-react';
+import { Clock, Calendar, LayoutGrid, GanttChart, User, Plus, Check, Feather } from 'lucide-react';
 
 export default function KanbanBoard() {
+  const [viewTasks, setViewTasks] = useState(<></>);
   const [columns, setColumns] = useState([
     {
       id: 'pendentes',
@@ -58,20 +59,6 @@ export default function KanbanBoard() {
     }
   ]);
 
-  const api = axios.create({
-    baseURL: 'http://localhost:8080/',
-    timeout: 5000,
-    headers: {'Content-Type': 'application/json' }
-  });
-
-  try {
-    api.get('/')
-    .then(response => console.log(response.data))
-    .catch(error => console.error(error));
-  } catch (error) {
-    console.error('Erro ao buscar as tasks', error);
-  };
-
   // Função para renderizar o chip de tag com a cor apropriada
   const renderTag = (tag) => {
     const getTagColorClass = (color) => {
@@ -95,6 +82,86 @@ export default function KanbanBoard() {
       </span>
     );
   };
+
+  // Cria a conexão
+  const api = axios.create({
+    baseURL: 'http://localhost:8080',
+    timeout: 5000,
+    headers: {'Content-Type': 'application/json'}
+  });
+
+  // Realiza as chamadas
+  const connGetTasks = async () => {
+    api.get('/')
+    .then(response => {
+      const array = response.data;
+      array.forEach(e => {
+        columns[e.completed == "c" ? 2 : e.completed == "a" ? 1 : 0].cards.push({
+          id: e.id,
+          title: e.title,
+          date: e.date,
+          assignee: e.assignee,
+          tags: [
+            { text: 'Prioridade Baixa', color: 'blue' },
+            { text: 'Fluxo', color: 'pink' },
+            { text: 'Cronograma', color: 'pink' }
+          ],
+          completed: e.completed
+        });
+      });
+    })
+    .catch(error => console.error(error));
+  };
+  connGetTasks();
+  useEffect(() => {
+    renderTasks();
+    console.log(columns);
+  }, [columns]);
+  const renderTasks = () => {
+    setViewTasks(columns.map(column => (
+    <div key={column.id} className="flex flex-col w-80 flex-shrink-0">
+      <div className="bg-gray-800 p-3 rounded-md mb-4">
+        <h2 className="font-medium text-lg">{column.title}</h2>
+      </div>
+      <div className="flex flex-col space-y-3 flex-1 overflow-y-auto">
+        {column.cards.map(card => (
+          <div key={card.id} className="bg-gray-800 p-3 rounded-md">
+            <div className="flex flex-wrap gap-1 mb-2">
+              {card.tags.map((tag, idx) => (
+                <div key={idx}>
+                  {renderTag(tag)}
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex items-start">
+              {card.completed == "c" && (
+                <div className="mr-2 mt-1">
+                  <div className="p-1 bg-green-600 rounded-full">
+                    <Check size={14} className="text-white" />
+                  </div>
+                </div>
+              )}
+              <h3 className="font-medium mb-1">{card.title}</h3>
+            </div>
+            <div className="text-sm text-gray-400 mb-2">{card.date}</div>
+            
+            <div className="flex justify-end">
+              <div className="flex items-center bg-gray-700 px-2 py-1 rounded-md">
+                <User size={14} className="mr-1" />
+                <span className="text-sm">{card.assignee}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+        
+        <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
+          <Plus size={16} className="mr-2" />
+          <span>Adicionar Cartão</span>
+        </button>
+      </div>
+    </div>
+  )))}
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
@@ -122,50 +189,7 @@ export default function KanbanBoard() {
       
       {/* Board */}
       <div className="flex flex-1 p-4 space-x-4 overflow-x-auto">
-        {columns.map(column => (
-          <div key={column.id} className="flex flex-col w-80 flex-shrink-0">
-            <div className="bg-gray-800 p-3 rounded-md mb-4">
-              <h2 className="font-medium text-lg">{column.title}</h2>
-            </div>
-            <div className="flex flex-col space-y-3 flex-1 overflow-y-auto">
-              {column.cards.map(card => (
-                <div key={card.id} className="bg-gray-800 p-3 rounded-md">
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {card.tags.map((tag, idx) => (
-                      <div key={idx}>
-                        {renderTag(tag)}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-start">
-                    {card.completed == "c" && (
-                      <div className="mr-2 mt-1">
-                        <div className="p-1 bg-green-600 rounded-full">
-                          <Check size={14} className="text-white" />
-                        </div>
-                      </div>
-                    )}
-                    <h3 className="font-medium mb-1">{card.title}</h3>
-                  </div>
-                  <div className="text-sm text-gray-400 mb-2">{card.date}</div>
-                  
-                  <div className="flex justify-end">
-                    <div className="flex items-center bg-gray-700 px-2 py-1 rounded-md">
-                      <User size={14} className="mr-1" />
-                      <span className="text-sm">{card.assignee}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
-                <Plus size={16} className="mr-2" />
-                <span>Adicionar Cartão</span>
-              </button>
-            </div>
-          </div>
-        ))}
+        {viewTasks}
       </div>
     </div>
   );
