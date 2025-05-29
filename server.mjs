@@ -57,13 +57,9 @@ app.post("/addTask", async (req, res) => {
         'INSERT INTO tasks (title, date, assignee, completed) VALUES (?, ?, ?, ?)',
         [title, date, assignee, completed]
     );
-    const [result2] = tags.map(tag => connection.execute(
-        'INSERT INTO tags_tasks (task_id, tag_id) VALUES (?, ?)',
-        [result1.insertId, tag]
-    ));
     await connection.end();
-    res.send(result);
-    console.log(result);
+    res.send(result1);
+    console.log(result1);
 });
 
 // Iniciar o servidor

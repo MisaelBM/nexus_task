@@ -97,6 +97,7 @@ export default function AdicionarTarefa() {
       .catch(error => {
         console.error('Erro ao adicionar tarefa:', error);
       });
+    location.href = '/pages/frame/';
   };
   
   return (
@@ -181,9 +182,9 @@ export default function AdicionarTarefa() {
                 <Link href="/pages/frame/" className="px-4 py-2 rounded-md border border-gray-700 hover:bg-gray-800 transition">
                   Cancelar
                 </Link>
-                <Link href="/pages/frame/" className="px-4 py-2 rounded-md border border-gray-700 hover:bg-gray-800 transition" onClick={handleSubmit}>
+                <button className="px-4 py-2 rounded-md border border-gray-700 bg-blue-800 transition" onClick={handleSubmit}>
                   Adicionar Tarefa
-                </Link>
+                </button>
               </div>
             </div>
           </form>
