@@ -11,51 +11,17 @@ export default function KanbanBoard() {
     {
       id: 'pendentes',
       title: 'Pendentes',
-      cards: [
-        {
-          id: 'p1',
-          title: 'Criar relatório XYZ',
-          date: '01/05/2025',
-          assignee: 'Hugo',
-          tags: [{ text: 'Sem Prioridade', color: 'gray' }],
-          completed: "p"
-        }
-      ]
+      cards: []
     },
     {
       id: 'andamento',
       title: 'Em Andamento',
-      cards: [
-        {
-          id: 'a1',
-          title: 'Criar relatório XYZ',
-          date: '01/05/2025',
-          assignee: 'Hugo',
-          tags: [
-            { text: 'Prioridade Média', color: 'yellow' },
-            { text: 'Negócio', color: 'darkgray' }
-          ],
-          completed: "a"
-        }
-      ]
+      cards: []
     },
     {
       id: 'concluidos',
       title: 'Concluídos',
-      cards: [
-        {
-          id: 'c1',
-          title: 'Criar relatório XYZ',
-          date: '01/05/2025',
-          assignee: 'Hugo',
-          tags: [
-            { text: 'Prioridade Baixa', color: 'blue' },
-            { text: 'Fluxo', color: 'pink' },
-            { text: 'Cronograma', color: 'pink' }
-          ],
-          completed: "c"
-        }
-      ]
+      cards: []
     }
   ]);
 
@@ -92,18 +58,19 @@ export default function KanbanBoard() {
 
   // Realiza as chamadas
   const connGetTasks = async () => {
-    api.get('/')
+    await api.get("/viewTask")
     .then(response => {
       columns.forEach(column => {
         column.cards = [];
       });
       // Preenche os cards com os dados do banco
       const array = response.data;
+      
       array.forEach(e => {
         columns[e.completed == "c" ? 2 : e.completed == "a" ? 1 : 0].cards.push({
           id: e.id,
           title: e.title,
-          date: e.date,
+          date: `${e.date}`.split('T')[0],
           assignee: e.assignee,
           tags: [
             { text: 'Prioridade Baixa', color: 'blue' },
@@ -112,16 +79,16 @@ export default function KanbanBoard() {
           ],
           completed: e.completed
         });
-      });
+      });  
     })
     .catch(error => console.error(error));
   };
-  connGetTasks();
   useEffect(() => {
     renderTasks();
     console.log(columns);
   }, [columns]);
-  const renderTasks = () => {
+  const renderTasks = async() => {
+    await connGetTasks();
     setViewTasks(columns.map(column => (
     <div key={column.id} className="flex flex-col w-80 flex-shrink-0">
       <div className="bg-gray-800 p-3 rounded-md mb-4">
@@ -158,13 +125,6 @@ export default function KanbanBoard() {
             </div>
           </div>
         ))}
-        
-        <Link href={`/pages/newTask/`} completed={column.id} className='flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700'>
-          <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
-            <Plus size={16} className="mr-2" />
-            <span>Adicionar Cartão</span>
-          </button>
-        </Link>
       </div>
     </div>
   )))}
@@ -197,6 +157,12 @@ export default function KanbanBoard() {
       <div className="flex flex-1 p-4 space-x-4 overflow-x-auto">
         {viewTasks}
       </div>
+      <Link href={`/pages/newTask/`} className='flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700'>
+          <button className="flex items-center justify-center p-3 bg-gray-800 rounded-md text-gray-400 hover:bg-gray-700">
+            <Plus size={16} className="mr-2" />
+            <span>Adicionar Cartão</span>
+          </button>
+        </Link>
     </div>
   );
 }

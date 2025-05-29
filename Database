@@ -32,3 +32,14 @@ CREATE TABLE IF NOT EXISTS task_tags (
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
+
+INSERT INTO tags (name, color) VALUES ('Trabalho', 'blue'),
+('Pessoal', 'green'),
+('Urgente', 'red'),
+('Importante', 'yellow'),
+('Acompanhamento', 'purple'),
+('Reunião', 'orange'),
+('Projeto', 'pink'),
+('Pesquisa', 'cyan'),
+('Desenvolvimento', 'brown'),
+('Teste', 'gray');

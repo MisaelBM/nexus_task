@@ -23,21 +23,50 @@ const dbConfig = {
     database: 'gerenciador_tarefas'
 };
 
-// Conectar e buscar dados do MySQL
-const fetchTasks = async () => {
+// Exibir as tasks
+app.get("/viewTask", async (req, res) => {
     try {
         const connection = await mysql.createConnection(dbConfig);
         const [rows] = await connection.execute('SELECT * FROM tasks');
         await connection.end();
-        app.get('/', (req, res) => res.send(rows));
+        res.send(rows);
         console.log(rows);
     } catch (error) {
         console.log('Erro ao buscar as tasks:', error);
     }
-};
+});
+
+// Exibir as tags
+app.get("/viewTags", async (req, res) => {
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute('SELECT * FROM tags');
+        await connection.end();
+        res.send(rows);
+        console.log(rows);
+    } catch (error) {
+        console.log('Erro ao buscar as tags:', error);
+    }
+});
+
+// Adicionar uma nova task
+app.post("/addTask", async (req, res) => {
+    const { title, date, assignee, tags, completed } = req.body;
+    const connection = await mysql.createConnection(dbConfig);
+    const [result1] = await connection.execute(
+        'INSERT INTO tasks (title, date, assignee, completed) VALUES (?, ?, ?, ?)',
+        [title, date, assignee, completed]
+    );
+    const [result2] = tags.map(tag => connection.execute(
+        'INSERT INTO tags_tasks (task_id, tag_id) VALUES (?, ?)',
+        [result1.insertId, tag]
+    ));
+    await connection.end();
+    res.send(result);
+    console.log(result);
+});
 
 // Iniciar o servidor
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}/`);
-    fetchTasks(); // Executar a função de busca ao iniciar o servidor
 });

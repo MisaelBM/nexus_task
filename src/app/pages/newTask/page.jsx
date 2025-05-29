@@ -1,18 +1,84 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
 import { User } from 'lucide-react';
 
-export default function AdicionarTarefa(completed) {
+export default function AdicionarTarefa() {
+
+  // Cria a conexão
+  const api = axios.create({
+    baseURL: 'http://localhost:8080',
+    timeout: 5000,
+    headers: {'Content-Type': 'application/json'}
+  });
+
   const [tarefa, setTarefa] = useState({
       title: '',
       date: '',
       assignee: '',
-      tags: [{ text: 'Sem Prioridade', color: 'gray' }],
+      tags: [],
       completed: "p"
     });
+
+  const [checkTags, setCheckTags] = useState([]);
+  const [tags, setTags] = useState([]);
+  const [viewTags, setViewTags] = useState(<></>);
+
+  const changeCheck = (e) => {
+    const { name, checked } = e.target;
+
+    let newCheckTags;
+    if (checked) {
+      newCheckTags = [...checkTags, name];
+    } else {
+      newCheckTags = checkTags.filter(tag => tag !== name);
+    }
+    
+    setCheckTags(newCheckTags);
+    // Chama renderTags com o novo array diretamente
+    renderTags(newCheckTags);
+  };
+
+  const getTags = async () => {
+    try {
+      const response = await api.get('/viewTags');
+      setTags(response.data);
+      console.log(response.data);
+      renderTags(checkTags, response.data);
+    } catch (error) {
+      console.error('Erro ao buscar tags:', error);
+    }
+  };
+
+  // Função separada para renderizar as tags
+  const renderTags = (currentCheckTags = checkTags, currentTags = tags) => {
+    setViewTags(
+      currentTags.map((tag) => (
+        <div key={tag.id} className={`w-fit rounded-md font-medium ${currentCheckTags.includes(`${tag.id}`) ? "bg-blue-600" : "bg-gray-700"}`} >
+          <input type="checkbox" name={tag.id} id={tag.id} className="mr-2" onChange={e => changeCheck(e)} hidden/>
+          <label htmlFor={tag.id} className='w-100 h-100 px-2 py-1 text-15'>{tag.name}</label>
+        </div>
+      ))
+    );
+  };
+
+  // UseEffect para re-renderizar quando checkTags mudar
+  useEffect(() => {
+    if (tags.length > 0) {
+      renderTags();
+      setTarefa(prev => ({
+        ...prev,
+        tags: checkTags
+      }));
+    }
+  }, [checkTags, tags]);
+
+  useEffect(() => {
+    getTags();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,9 +90,13 @@ export default function AdicionarTarefa(completed) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Aqui seria a lógica para salvar a tarefa
-    console.log('Tarefa salva:', tarefa);
-    router.push('/quadro');
+    api.post('/addTask', tarefa)
+    .then(response => {
+        console.log('Tarefa adicionada com sucesso:', response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao adicionar tarefa:', error);
+      });
   };
   
   return (
@@ -58,8 +128,8 @@ export default function AdicionarTarefa(completed) {
                 </label>
                 <input
                   type="text"
-                  id="titulo"
-                  name="titulo"
+                  id="title"
+                  name="title"
                   value={tarefa.title}
                   onChange={handleChange}
                   className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -70,18 +140,17 @@ export default function AdicionarTarefa(completed) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="dataVencimento" className="block text-sm font-medium mb-1">
-                    Data de Vencimento
+                    Data da Tarefa
                   </label>
                   <input
                     type="date"
-                    id="dataVencimento"
-                    name="dataVencimento"
+                    id="date"
+                    name="date"
                     value={tarefa.date}
                     onChange={handleChange}
                     className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                
                 
                 <div>
                   <label htmlFor="responsavel" className="block text-sm font-medium mb-1">
@@ -89,13 +158,22 @@ export default function AdicionarTarefa(completed) {
                   </label>
                   <input
                     type="text"
-                    id="responsavel"
-                    name="responsavel"
+                    id="assignee"
+                    name="assignee"
                     value={tarefa.assignee}
                     onChange={handleChange}
                     className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Nome do responsável"
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="tags" className="block text-sm font-medium mb-1">
+                    Selecione as Tags
+                  </label>
+                  <div className='flex flex-wrap gap-2 flex-row mt-3'>
+                    {viewTags}
+                  </div>
                 </div>
               </div>
               
@@ -103,12 +181,9 @@ export default function AdicionarTarefa(completed) {
                 <Link href="/pages/frame/" className="px-4 py-2 rounded-md border border-gray-700 hover:bg-gray-800 transition">
                   Cancelar
                 </Link>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-                >
+                <Link href="/pages/frame/" className="px-4 py-2 rounded-md border border-gray-700 hover:bg-gray-800 transition" onClick={handleSubmit}>
                   Adicionar Tarefa
-                </button>
+                </Link>
               </div>
             </div>
           </form>
@@ -131,7 +206,7 @@ export default function AdicionarTarefa(completed) {
             
             {tarefa.date && (
               <div className="mt-2 text-sm text-gray-400">
-                {new Date(tarefa.date).toLocaleDateString('pt-BR')}
+                {tarefa.date.split('-').reverse().join('/')}
               </div>
             )}
             
@@ -142,6 +217,18 @@ export default function AdicionarTarefa(completed) {
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                   {tarefa.assignee}
+                </div>
+              </div>
+            )}
+
+            {tarefa.tags.length > 0 && (
+              <div className="mt-3">
+                <div className="flex flex-wrap gap-2">
+                  {tarefa.tags.map((tag, index) => (
+                    <span key={index} className="w-fit rounded-md font-medium bg-blue-600 text-white px-2 py-1">
+                      {tags[parseInt(tag) - 1].name}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
