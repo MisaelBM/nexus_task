@@ -18,8 +18,8 @@ app.use(express.json());
 // Configuração do banco de dados
 const dbConfig = {
     host: 'localhost',
-    user: 'root',
-    password: '030119983',
+    user: 'appuser',
+    password: 'appus3rMysql',
     database: 'gerenciador_tarefas'
 };
 

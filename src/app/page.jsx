@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { User, Calendar, CheckCircle, Clock, SquareCheckBig, ArrowRight } from 'lucide-react';
+import { Particles } from "@/components/magicui/particles";
 
 export default function WelcomePage() {
 
   return (
-    <div id="welcomePage" className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <div id="welcomePage" className="min-h-screen bg-gradient-to-br relative from-gray-900 to-gray-800 text-white">
       {/* Header */}
-      <header className="flex items-center justify-between p-6 border-b border-gray-800">
+      <header className="flex items-center justify-between z-10 p-6 border-b border-gray-800">
         <div className="flex items-center">
           <div className="p-2 bg-blue-600 rounded-full mr-3">
             <SquareCheckBig size={20} className="text-white" />
@@ -22,9 +23,12 @@ export default function WelcomePage() {
       </header>
       
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-16 flex flex-col items-center">
-        <div className="text-center max-w-3xl flex flex-col items-center justify-center">
-          <h2 className="text-4xl font-bold mb-6">Bem-vindo ao seu sistema de gestão de tarefas</h2>
+      <main className="container  mx-auto px-4 py-16 flex flex-col items-center">
+        <div className="absolute z-0 top-[89px] left-0 h-[550px] w-full">
+          <Particles />
+        </div>
+        <div className="text-center max-w-3xl z-10 flex flex-col items-center justify-center">
+          <h2 className="text-4xl font-bold mb-6">Bem-vindo ao Nexus Task, seu auxiliar para gerenciar suas tarefas e soa rotina</h2>
           <p className="text-xl text-gray-300 mb-8">
             Organize seu fluxo de trabalho, acompanhe o progresso da equipe e aumente a produtividade com nossa solução completa.
           </p>
