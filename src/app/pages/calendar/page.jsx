@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, LayoutGrid, GanttChart, Calendar, Layout, Clock, User, Edit, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import Header from '../../../components/headerLogIn';
+import Sidebar from '@/components/sidebar';
 
 export default function CalendarPage() {
   // Estado para controlar o mês e ano atuais
@@ -95,14 +96,45 @@ export default function CalendarPage() {
       week = [];
     }
   });
+
+  const [getDataSidebar, setGetDataSidebar] = useState("");
+  const [setDataSidebar, setSetDataSidebar] = useState("");
+
+  const getData = (data) => {
+    setGetDataSidebar(data);
+    // console.log(getDataSidebar)
+  }
+
+  const parentToChild = () => {
+    setSetDataSidebar("OLA")
+  }
+
+  useEffect(() => {
+    const sidebar = document.getElementById('sidebar');
+    let sidebarButton = document.getElementById('sidebar-button');
+    const body = document.getElementById('body');
+
+    body.addEventListener('click', (event) => {
+      if (sidebar.classList.contains('w-64') && event.target.id != "sidebar") {
+        // setSetDataSidebar(getDataSidebar)
+        parentToChild()
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-12');
+        sidebarButton.classList.remove("rotate-180");
+      }
+    });
+  }, []);
   
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       {/* Header */}
       <Header />
+
+      {/* Sidebar */}
+      <Sidebar getData={getData} setData={setDataSidebar}/>
       
       {/* Corpo principal */}
-      <main className="flex flex-1 p-6">
+      <main id='main' className="flex flex-1 p-6 ml-16">
         {/* Conteúdo do calendário */}
         <div className="flex-1 flex flex-col min-h-full">
           {/* Cabeçalho do calendário */}
