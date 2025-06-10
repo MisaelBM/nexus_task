@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import Header from '../../../components/headerLogIn';
@@ -19,15 +20,6 @@ export default function CalendarPage() {
   
   // Dias da semana em português
   const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-  
-  // Eventos simulados (dia do mês => cor)
-  const events = {
-    1: 'green',
-    4: 'red',
-    5: 'yellow',
-    13: 'blue',
-    16: 'blue'
-  };
   
   // Função para gerar os dias do mês atual
   const getDaysInMonth = (month, year) => {
@@ -97,44 +89,87 @@ export default function CalendarPage() {
     }
   });
 
-  const [getDataSidebar, setGetDataSidebar] = useState("");
-  const [setDataSidebar, setSetDataSidebar] = useState("");
+  // Cria a conexão
+  const api = axios.create({
+    baseURL: 'http://localhost:8080',
+    timeout: 5000 ,
+    headers: {'Content-Type': 'application/json'}
+  });
 
-  const getData = (data) => {
-    setGetDataSidebar(data);
-    // console.log(getDataSidebar)
+  // Eventos simulados (dia do mês => cor)
+  const [tasks, setTasks] = useState([]);
+
+  const handleTasks = (tasks) => {
+    const taskMap = {};
+
+    tasks.forEach(task => {
+      const year = new Date(task.date).getFullYear();
+      const month = new Date(task.date).getMonth();
+      const day = new Date(task.date).getDate();
+
+      if (day < new Date().getDate()){
+        taskMap[`${year} ${month} ${day}`] = 'red'; // Cor para dias anteriores
+      } else if (day === new Date().getDate()) {
+        taskMap[`${year} ${month} ${day}`] = 'yellow'; // Cor para o dia atual
+      } else {
+        taskMap[`${year} ${month} ${day}`] = 'blue'; // Cor para dias futuros
+      }
+
+      // taskMap[day] = 'blue'; // Supondo que a cor esteja no campo 'color'
+    });
+    setTasks(taskMap);
   }
 
-  const parentToChild = () => {
-    setSetDataSidebar("OLA")
+  const getTasks = async () => {
+    try {
+      const response = await api.get('/viewTask');
+      // setTasks(response.data);
+      handleTasks(response.data);
+      // console.log(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
+    }
   }
 
   useEffect(() => {
-    const sidebar = document.getElementById('sidebar');
-    let sidebarButton = document.getElementById('sidebar-button');
-    const body = document.getElementById('body');
-
-    body.addEventListener('click', (event) => {
-      if (sidebar.classList.contains('w-64') && event.target.id != "sidebar") {
-        // setSetDataSidebar(getDataSidebar)
-        parentToChild()
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-12');
-        sidebarButton.classList.remove("rotate-180");
-      }
-    });
+    getTasks();
   }, []);
-  
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarOpen &&
+        event.target.id !== 'sidebar' &&
+        event.target.id !== 'sidebar-icon' &&
+        !event.target.closest('.sidebar-button')
+      ) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <Header />
+      <Header isActive={[true, false, false]} />
 
       {/* Sidebar */}
-      <Sidebar getData={getData} setData={setDataSidebar}/>
+      <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
       
       {/* Corpo principal */}
-      <main id='main' className="flex flex-1 p-6 ml-16">
+      <main id='main' className={`flex flex-1 p-6 ml-16 duration-100`}>
         {/* Conteúdo do calendário */}
         <div className="flex-1 flex flex-col min-h-full">
           {/* Cabeçalho do calendário */}
@@ -163,7 +198,6 @@ export default function CalendarPage() {
               </button>
             </div>
           </div>
-          
           {/* Grid do calendário */}
           <div className="grid grid-cols-7 gap-[6px]">
             {/* Dias da semana */}
@@ -176,7 +210,6 @@ export default function CalendarPage() {
 
           <div className='h-full min-h-[530px] max-h-[700px] p-6 my-auto rounded-xl bg-[#0E1621]'>
             <div className='grid grid-cols-7 h-full gap-[6px] rounded-md overflow-hidden'>
-              
               {/* Dias do mês */}
               {weeks.flat().map((day, index) => (
                 <div className='h-full'>
@@ -191,15 +224,15 @@ export default function CalendarPage() {
                         <>
                           <Link year={currentYear} month={currentMonth} day={day} href={day ? `/pages/frame/` : ""} className="text-center w-full h-full block">
                             <span className="text-sm">{day}</span>
-                            {events[day] && (
+                            {tasks && (
                             <div 
-                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${events[day]}-500`}
+                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${tasks[day]}-500`}
                                 style={{ 
                                 backgroundColor: 
-                                    events[day] === 'green' ? '#10B981' : 
-                                    events[day] === 'red' ? '#EF4444' : 
-                                    events[day] === 'yellow' ? '#F59E0B' : 
-                                    events[day] === 'blue' ? '#3B82F6' : 'transparent' 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'green' ? '#10B981' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'red' ? '#EF4444' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'yellow' ? '#F59E0B' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'blue' ? '#3B82F6' : 'transparent' 
                                 }}
                             />
                             )}
@@ -208,15 +241,15 @@ export default function CalendarPage() {
                       ) : (
                         <>
                             <span className="text-sm">{day}</span>
-                            {events[day] && (
+                            {tasks[day] && (
                             <div 
-                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${events[day]}-500`}
+                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${tasks[day]}-500`}
                                 style={{ 
                                 backgroundColor: 
-                                    events[day] === 'green' ? '#10B981' : 
-                                    events[day] === 'red' ? '#EF4444' : 
-                                    events[day] === 'yellow' ? '#F59E0B' : 
-                                    events[day] === 'blue' ? '#3B82F6' : 'transparent' 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'green' ? '#10B981' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'red' ? '#EF4444' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'yellow' ? '#F59E0B' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'blue' ? '#3B82F6' : 'transparent' 
                                 }}
                             />
                             )}
