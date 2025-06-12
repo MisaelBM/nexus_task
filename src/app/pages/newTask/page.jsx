@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
-import { User } from 'lucide-react';
+import Header from '../../../components/headerLogIn';
+import Sidebar from '@/components/sidebar';
+// import { response } from 'express';
 
 export default function AdicionarTarefa() {
 
@@ -93,12 +95,46 @@ export default function AdicionarTarefa() {
     api.post('/addTask', tarefa)
     .then(response => {
         console.log('Tarefa adicionada com sucesso:', response.data);
+
+        let idTarefa = response.data.insertId;
+        api.post('/addTagsTasks', {tag_id: tarefa['tags'], task_id: idTarefa})
+        .then(response => {
+            console.log('Tag adicionada com sucesso:', response.data);
+          })
+          .catch(error => {
+            console.error('Erro ao adicionar tag:', error);
+          });
+        location.href = '/pages/frame/';
       })
       .catch(error => {
         console.error('Erro ao adicionar tarefa:', error);
       });
-    location.href = '/pages/frame/';
   };
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarOpen &&
+        event.target.id !== 'sidebar' &&
+        event.target.id !== 'sidebar-icon' &&
+        !event.target.closest('.sidebar-button')
+      ) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isSidebarOpen]);
   
   return (
     <div className="min-h-screen bg-[#111827] text-white">
@@ -108,14 +144,11 @@ export default function AdicionarTarefa() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
-      <header className="flex justify-between items-center px-4 py-3 border-b border-gray-800">
-        <div className="flex items-center space-x-2">
-         <div className="p-2 bg-gray-800 rounded-full mr-4">
-            <User size={20} className="text-white" />
-          </div>
-          <h1 className="text-xl font-semibold text-fuchsia-200">Nexus Task</h1>
-        </div>
-      </header>
+      {/* Header */}
+      <Header />
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
       
       <main className="max-w-2xl mx-auto mt-8 px-4">
         <div className="bg-[#1e293b] rounded-lg p-6 shadow-lg">

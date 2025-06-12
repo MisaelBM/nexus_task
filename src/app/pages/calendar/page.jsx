@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, LayoutGrid, GanttChart, Calendar, Layout, Clock, User, Edit, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import Header from '../../../components/headerLogIn';
+import Sidebar from '@/components/sidebar';
 
 export default function CalendarPage() {
   // Estado para controlar o mês e ano atuais
@@ -17,15 +20,6 @@ export default function CalendarPage() {
   
   // Dias da semana em português
   const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-  
-  // Eventos simulados (dia do mês => cor)
-  const events = {
-    1: 'green',
-    4: 'red',
-    5: 'yellow',
-    13: 'blue',
-    16: 'blue'
-  };
   
   // Função para gerar os dias do mês atual
   const getDaysInMonth = (month, year) => {
@@ -94,89 +88,178 @@ export default function CalendarPage() {
       week = [];
     }
   });
-  
+
+  // Cria a conexão
+  const api = axios.create({
+    baseURL: 'http://localhost:8080',
+    timeout: 5000 ,
+    headers: {'Content-Type': 'application/json'}
+  });
+
+  // Eventos simulados (dia do mês => cor)
+  const [tasks, setTasks] = useState([]);
+
+  const handleTasks = (tasks) => {
+    const taskMap = {};
+
+    tasks.forEach(task => {
+      const year = new Date(task.date).getFullYear();
+      const month = new Date(task.date).getMonth();
+      const day = new Date(task.date).getDate();
+
+      if (day < new Date().getDate()){
+        taskMap[`${year} ${month} ${day}`] = 'red'; // Cor para dias anteriores
+      } else if (day === new Date().getDate()) {
+        taskMap[`${year} ${month} ${day}`] = 'yellow'; // Cor para o dia atual
+      } else {
+        taskMap[`${year} ${month} ${day}`] = 'blue'; // Cor para dias futuros
+      }
+
+      // taskMap[day] = 'blue'; // Supondo que a cor esteja no campo 'color'
+    });
+    setTasks(taskMap);
+  }
+
+  const getTasks = async () => {
+    try {
+      const response = await api.get('/viewTask');
+      // setTasks(response.data);
+      handleTasks(response.data);
+      // console.log(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
+    }
+  }
+
+  useEffect(() => {
+    getTasks();
+  }, []);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleSidebarToggle = (isOpen) => {
+    setIsSidebarOpen(isOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isSidebarOpen &&
+        event.target.id !== 'sidebar' &&
+        event.target.id !== 'sidebar-icon' &&
+        !event.target.closest('.sidebar-button')
+      ) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [isSidebarOpen]);
+
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
+    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       {/* Header */}
-      <div className="flex items-center border-b border-gray-800 p-4">
-        <div className="flex items-center">
-          <div className="p-2 bg-gray-800 rounded-full mr-4">
-            <User size={20} className="text-white" />
-          </div>
-          <h1 className="text-xl font-semibold text-fuchsia-200">Nexus Task</h1>
-        </div>
-      </div>
+      <Header isActive={[true, false, false]} />
+
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onToggle={handleSidebarToggle} />
       
       {/* Corpo principal */}
-      <main className="flex flex-1 p-4">
+      <main id='main' className={`flex flex-1 p-6 ml-16 duration-100`}>
         {/* Conteúdo do calendário */}
-        <div className="flex-1 pl-4">
+        <div className="flex-1 flex flex-col min-h-full">
           {/* Cabeçalho do calendário */}
-          <div className="flex items-center mb-6">
-            <div className="w-8 h-8 bg-gray-700 rounded flex items-center justify-center mr-4">
-              <Calendar size={16} />
+          <div className="flex items-center mb-3">
+            <div className="w-8 h-8 bg-[#1F2B3E] cursor-pointer rounded flex items-center justify-center mr-4">
+              <Calendar size={20} />
             </div>
             
             <div className="flex items-center mr-8">
-              <button onClick={goToPreviousMonth} className="p-1">
+              <button onClick={goToPreviousMonth} className="p-1 cursor-pointer">
                 <ChevronLeft size={20} />
               </button>
-              <span className="w-24 text-center">{months[currentMonth]}</span>
-              <button onClick={goToNextMonth} className="p-1">
+              <span className="w-fit px-6 text-center">{months[currentMonth]}</span>
+              <button onClick={goToNextMonth} className="p-1 cursor-pointer">
                 <ChevronRight size={20} />
               </button>
             </div>
             
             <div className="flex items-center">
-              <button onClick={goToPreviousYear} className="p-1">
+              <button onClick={goToPreviousYear} className="p-1 cursor-pointer">
                 <ChevronLeft size={20} />
               </button>
-              <span className="w-16 text-center">{currentYear}</span>
-              <button onClick={goToNextYear} className="p-1">
+              <span className="w-fit px-6 text-center">{currentYear}</span>
+              <button onClick={goToNextYear} className="p-1 cursor-pointer">
                 <ChevronRight size={20} />
               </button>
             </div>
           </div>
-          
           {/* Grid do calendário */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-[6px]">
             {/* Dias da semana */}
             {weekdays.map((day, index) => (
               <div key={index} className="text-center py-2 text-gray-400">
                 {day}
               </div>
             ))}
-            
-            {/* Dias do mês */}
-            {weeks.flat().map((day, index) => (
-              <Link year={currentYear} month={currentMonth} day={day} href={day ? `/pages/frame/` : ""} className="text-center py-2">
-                <div 
-                    key={index} 
-                    className={`
-                    h-24 p-1 relative
-                    ${day ? 'border border-gray-700 bg-gray-800 duration-400 hover:bg-gray-600' : ''} 
-                    `}
-                >
-                    {day && (
-                    <>
-                        <span className="text-sm">{day}</span>
-                        {events[day] && (
-                        <div 
-                            className={`absolute top-1 right-1 w-4 h-4 rounded-full bg-${events[day]}-500`}
-                            style={{ 
-                            backgroundColor: 
-                                events[day] === 'green' ? '#10B981' : 
-                                events[day] === 'red' ? '#EF4444' : 
-                                events[day] === 'yellow' ? '#F59E0B' : 
-                                events[day] === 'blue' ? '#3B82F6' : 'transparent' 
-                            }}
-                        />
-                        )}
-                    </>
-                    )}
+          </div>
+
+          <div className='h-full min-h-[530px] max-h-[700px] p-6 my-auto rounded-xl bg-[#0E1621]'>
+            <div className='grid grid-cols-7 h-full gap-[6px] rounded-md overflow-hidden'>
+              {/* Dias do mês */}
+              {weeks.flat().map((day, index) => (
+                <div className='h-full'>
+                  <div 
+                      key={index} 
+                      className={`
+                      h-full p-1 relative
+                      ${day ? 'bg-gray-800 duration-400 hover:bg-gray-600' : 'bg-[#121E2E]'} 
+                      `}
+                  >
+                      {day ? (
+                        <>
+                          <Link year={currentYear} month={currentMonth} day={day} href={day ? `/pages/frame/` : ""} className="text-center w-full h-full block">
+                            <span className="text-sm">{day}</span>
+                            {tasks && (
+                            <div 
+                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${tasks[day]}-500`}
+                                style={{ 
+                                backgroundColor: 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'green' ? '#10B981' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'red' ? '#EF4444' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'yellow' ? '#F59E0B' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'blue' ? '#3B82F6' : 'transparent' 
+                                }}
+                            />
+                            )}
+                          </Link>
+                        </>
+                      ) : (
+                        <>
+                            <span className="text-sm">{day}</span>
+                            {tasks[day] && (
+                            <div 
+                                className={`absolute top-2 right-2 w-4 h-4 rounded-full bg-${tasks[day]}-500`}
+                                style={{ 
+                                backgroundColor: 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'green' ? '#10B981' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'red' ? '#EF4444' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'yellow' ? '#F59E0B' : 
+                                    tasks[`${currentYear} ${currentMonth} ${day}`] === 'blue' ? '#3B82F6' : 'transparent' 
+                                }}
+                            />
+                            )}
+                        </>
+
+                      )}
+                  </div>
                 </div>
-              </Link>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </main>
