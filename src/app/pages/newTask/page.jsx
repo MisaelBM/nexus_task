@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
-import { User } from 'lucide-react';
 import Header from '../../../components/headerLogIn';
 import Sidebar from '@/components/sidebar';
+// import { response } from 'express';
 
 export default function AdicionarTarefa() {
 
@@ -95,11 +95,20 @@ export default function AdicionarTarefa() {
     api.post('/addTask', tarefa)
     .then(response => {
         console.log('Tarefa adicionada com sucesso:', response.data);
+
+        let idTarefa = response.data.insertId;
+        api.post('/addTagsTasks', {tag_id: tarefa['tags'], task_id: idTarefa})
+        .then(response => {
+            console.log('Tag adicionada com sucesso:', response.data);
+          })
+          .catch(error => {
+            console.error('Erro ao adicionar tag:', error);
+          });
+        location.href = '/pages/frame/';
       })
       .catch(error => {
         console.error('Erro ao adicionar tarefa:', error);
       });
-    location.href = '/pages/frame/';
   };
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
